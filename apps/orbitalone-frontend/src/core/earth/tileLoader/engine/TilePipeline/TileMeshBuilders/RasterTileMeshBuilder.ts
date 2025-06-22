@@ -110,14 +110,14 @@ function createTileMaterial(
   texture: CanvasTexture,
   zoom: number
 ): MeshBasicMaterial {
-  const isHighRes = zoom > 2;
+  const isHighRes = zoom > 3;
 
   return new MeshBasicMaterial({
     map: texture,
     side: FrontSide,
     transparent: isHighRes,
-    opacity: 1.0,
-    depthWrite: !isHighRes,
+    opacity: 0,
+    depthWrite: false,
   });
 }
 
