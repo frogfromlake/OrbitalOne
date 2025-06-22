@@ -1,12 +1,5 @@
 import { Material, Mesh, MeshBasicMaterial } from "three";
 
-// Read fade duration from a global (default 400ms)
-function getFadeDuration(defaultMs: number) {
-  if (typeof window !== "undefined" && (window as any).tileFadeDuration)
-    return (window as any).tileFadeDuration;
-  return defaultMs;
-}
-
 // Helper: applies callback to all materials (handles arrays)
 function forEachMaterial(mesh: Mesh, fn: (mat: Material) => void) {
   if (Array.isArray(mesh.material)) {

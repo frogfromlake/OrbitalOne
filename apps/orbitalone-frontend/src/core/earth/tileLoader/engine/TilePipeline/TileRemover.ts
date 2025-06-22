@@ -1,7 +1,7 @@
-// engine/TileLayer/TilePipeline/TileRemover.ts
-
 import type { TilePipelineState } from "./TilePipelineStore";
 import { fadeOutTileMesh } from "./TileFading";
+import { Mesh } from "three";
+import { TileMeshCache } from "./TileMeshCache";
 
 export class TileRemover {
   private pendingRemoval = new Map<string, number>();
@@ -18,19 +18,16 @@ export class TileRemover {
     this.removalsThisFrame = removalsPerFrame;
   }
 
-  /** Runtime adjustment (eg. zoom-out: increase delay, decrease removals per frame) */
   setParams(frames: number, removals: number) {
     this.framesTillRemove = frames;
     this.removalsThisFrame = removals;
   }
 
-  /** Tiles that are just outside frustum but not ready to evict yet */
   setFringeTiles(tiles: Set<string>) {
     this.fringeTiles = tiles;
   }
 
   markPending(key: string) {
-    // Don't mark if in fringe (buffer region)
     if (this.fringeTiles.has(key)) return;
     if (!this.pendingRemoval.has(key)) {
       this.pendingRemoval.set(key, this.framesTillRemove);
@@ -45,7 +42,6 @@ export class TileRemover {
     return this.pendingRemoval.has(key);
   }
 
-  /** Mark all for removal (eg. on zoom-out of upper LODs), except those in fringe */
   markAllForRemoval() {
     for (const key of this.state.visibleTiles) {
       if (!this.fringeTiles.has(key)) this.markPending(key);
@@ -57,7 +53,19 @@ export class TileRemover {
     const next = new Map<string, number>();
 
     for (const [key, framesLeft] of this.pendingRemoval.entries()) {
-      if (this.state.visibleTiles.has(key)) continue;
+      if (isFallbackTile(key)) {
+        // Use the robust coverage check!
+        if (
+          !isTileCoveredByOpaqueChildren(
+            key,
+            this.state.visibleTiles,
+            this.state.tileCache
+          )
+        ) {
+          next.set(key, framesLeft);
+          continue;
+        }
+      }
 
       if (framesLeft <= 1 && removed < this.removalsThisFrame) {
         const mesh = this.state.tileCache.get(key);
@@ -94,4 +102,39 @@ export class TileRemover {
   clear() {
     this.pendingRemoval.clear();
   }
+}
+
+// Only remove fallback if *all* 4 children are loaded, visible, and opaque.
+function isTileCoveredByOpaqueChildren(
+  key: string,
+  visibleTiles: Set<string>,
+  tileCache: TileMeshCache
+): boolean {
+  const [zStr, xStr, yStr] = key.split("/");
+  const z = Number(zStr);
+  const x = Number(xStr);
+  const y = Number(yStr);
+  const childZ = z + 1;
+  const children = [
+    `${childZ}/${x * 2}/${y * 2}`,
+    `${childZ}/${x * 2 + 1}/${y * 2}`,
+    `${childZ}/${x * 2}/${y * 2 + 1}`,
+    `${childZ}/${x * 2 + 1}/${y * 2 + 1}`,
+  ];
+  return children.every((childKey) => {
+    if (!visibleTiles.has(childKey)) return false;
+    const mesh = tileCache.get(childKey);
+    if (!mesh) return false;
+    // Require fully opaque (opacity == 1)
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    return mats.every(
+      (m) => (m as any).opacity === undefined || (m as any).opacity >= 0.99
+    );
+  });
+}
+
+function isFallbackTile(key: string): boolean {
+  const [zStr] = key.split("/");
+  const z = Number(zStr);
+  return z <= 3; // Your fallback LOD
 }

@@ -206,7 +206,7 @@ function animate(): void {
   const eased = Math.pow(t, 1.2);
 
   let slowFactor = 1.0;
-  if (distance < 0.005) slowFactor = 0.05;
+  if (distance < 0.005) slowFactor = 0.08;
   else if (distance < 0.01) slowFactor = 0.15;
   else if (distance < 0.02) slowFactor = 0.5;
   else if (distance < 0.03) slowFactor = 0.7;
