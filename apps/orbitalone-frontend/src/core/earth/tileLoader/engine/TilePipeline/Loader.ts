@@ -1,13 +1,14 @@
 // engine/TileLayer/TilePipeline/Loader.ts
 import type { Mesh } from "three";
 import { fadeOutTileMesh, fadeInTileMesh } from "./TileFading";
-import { TilePipelineState, TileEngineConfig } from "./TilePipelineStore";
+import { TilePipelineState } from "./TilePipelineStore";
 import { getParentTileKey } from "../utils/geo/tileIndexing";
 
 export class Loader {
   run(state: TilePipelineState, z: number) {
     // --- Cap the task queue ---
-    const MAX_QUEUE_LENGTH = z >= 13 ? 8 : z >= 11 ? 16 : 32;
+    // const MAX_QUEUE_LENGTH = z >= 13 ? 8 : z >= 11 ? 16 : 32;
+    const MAX_QUEUE_LENGTH = z >= 13 ? 10 : z >= 11 ? 18 : 64;
     if (state.taskQueue.length() > MAX_QUEUE_LENGTH) {
       console.warn(`[Loader] Tile queue overloaded at Z${z}, skipping load`);
       return;
@@ -61,13 +62,14 @@ export class Loader {
                 const parentKey = getParentTileKey(
                   candidate.z,
                   candidate.x,
-                  candidate.y
+                  candidate.y,
+                  state.fallbackLayer
                 );
                 if (parentKey && state.tileCache.has(parentKey)) {
                   const parentMesh = state.tileCache.get(parentKey);
                   if (parentMesh) {
                     if (fadeEnabled) {
-                      fadeOutTileMesh(parentMesh, 400, () => {
+                      fadeOutTileMesh(parentMesh, 100, () => {
                         if (parentMesh.parent)
                           parentMesh.parent.remove(parentMesh);
                         state.visibleTiles.delete(parentKey);

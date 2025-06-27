@@ -24,9 +24,10 @@ import { TileRenderOptions } from "../TilePipelineStore";
 export async function createRasterTileMesh(
   options: TileRenderOptions
 ): Promise<Mesh> {
+  const fallbackLayer = options.fallbackLayer ?? 3; // Default if not set
   const geometry = buildTileGeometry(options);
   const texture = await loadTileTexture(options);
-  const material = createTileMaterial(texture, options.z);
+  const material = createTileMaterial(texture, options.z, fallbackLayer);
   return assembleMesh(geometry, material);
 }
 
@@ -108,9 +109,10 @@ async function loadTileTexture(
  */
 function createTileMaterial(
   texture: CanvasTexture,
-  zoom: number
+  zoom: number,
+  fallbackLayer: number
 ): MeshBasicMaterial {
-  const isHighRes = zoom > 3;
+  const isHighRes = zoom > fallbackLayer;
 
   return new MeshBasicMaterial({
     map: texture,

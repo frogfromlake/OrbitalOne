@@ -4,7 +4,7 @@
  */
 
 import { Scene, PerspectiveCamera, WebGLRenderer, Group } from "three";
-import { estimateZoomLevel } from "./utils/lod/lodFunctions";
+import { estimateZoomLevel, getMinDistForZoom } from "./utils/lod/lodFunctions";
 import { TileMeshCache } from "./TilePipeline/TileMeshCache";
 import {
   CreateTileMeshFn,
@@ -45,6 +45,7 @@ export class GlobeTileEngine {
     this.urlTemplate = options.urlTemplate;
     this.createTileMesh = options.createTileMesh;
     this.minZoom = options.minZoom;
+    console.log("CONSTRUCTOR OPTIONS MINZOOM: ", options.minZoom);
     this.maxZoom = options.maxZoom;
     // this.fallbackManager = options.fallbackTileManager;
     this.config = {
@@ -60,7 +61,6 @@ export class GlobeTileEngine {
     this.getRadiusForZoom = options.getRadiusForZoom ?? (() => 1);
     this.tileLayers = new Map();
     this.visibleTiles = new Set();
-
     this.initializeTileLayers();
   }
 
@@ -75,12 +75,12 @@ export class GlobeTileEngine {
         {
           // Optionally: callbacks
           // onParentRemoval: (parentKey, mesh) => { ... }
-        }
+        },
+        this.minZoom
       );
 
       const radius = this.getRadiusForZoom(z);
       const taskQueue = new TaskQueue();
-
       // Create the pipeline
       const pipeline = new TileVisualPipeline(
         this.renderer,
@@ -94,7 +94,8 @@ export class GlobeTileEngine {
         this.config,
         this.visibleTiles,
         taskQueue,
-        z
+        z,
+        this.minZoom
       );
 
       // Register after construction!
@@ -142,7 +143,7 @@ export class GlobeTileEngine {
       }
       for (const [z, layer] of this.tileLayers.entries()) {
         (layer as any).state.taskQueue.clear();
-        if (z !== estimatedZoom && z !== 3) {
+        if (z !== estimatedZoom && z !== this.minZoom) {
           (layer as any).state.tileCache.clear?.();
           (layer as any).state.loadedTiles.clear?.();
           (layer as any).state.stickyTiles.clear?.();
@@ -228,6 +229,7 @@ export class GlobeTileEngine {
       }
     }
   }
+
 
   /**
    * Returns a map of all managed tile layers by zoom level.

@@ -39,7 +39,6 @@ export interface TileEngineConfig {
   enableStickyTiles: boolean;
   enableTilePrewarm?: boolean;
   prewarmCount?: number;
-  // ...any other static config
 }
 
 export interface GlobeTileEngineOptions {
@@ -51,7 +50,6 @@ export interface GlobeTileEngineOptions {
   minZoom: number;
   maxZoom: number;
   getRadiusForZoom?: (z: number) => number;
-  // fallbackTileManager: TileLayer;
   config?: TileEngineConfig;
 }
 
@@ -82,6 +80,7 @@ export interface TileRenderOptions {
   radius?: number;
   renderer?: WebGLRenderer;
   onTextureLoaded?: (texture: Texture) => void;
+  fallbackLayer?: number;
 }
 
 // Function type for creating tile meshes (e.g., RasterTile, KTX2Tile)
@@ -106,6 +105,8 @@ export interface TilePipelineState {
   urlTemplate: string;
   radius: number;
   revision: number;
+  fallbackLayer: number;
+  parentChildrenLoaded: Map<string, Set<string>>;
 }
 
 // Initialization helper for Pipeline State
@@ -118,6 +119,7 @@ export function initializeTilePipelineState(
   createTileMesh: CreateTileMeshFn,
   urlTemplate: string,
   radius: number,
+  fallbackLayer: number,
   taskQueue?: TaskQueue
 ): TilePipelineState {
   return {
@@ -138,5 +140,7 @@ export function initializeTilePipelineState(
     radius,
     revision: 0,
     taskQueue: taskQueue ?? new TaskQueue(),
+    fallbackLayer,
+    parentChildrenLoaded: new Map<string, Set<string>>(),
   };
 }

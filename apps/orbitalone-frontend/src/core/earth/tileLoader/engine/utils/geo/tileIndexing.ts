@@ -3,6 +3,8 @@
  * @description
  */
 
+import { TileEngineConfig } from "../../TilePipeline/TilePipelineStore";
+
 /**
  * Converts longitude to tile X coordinate at zoom level `z`.
  */
@@ -60,9 +62,10 @@ export function* computeTileSpiral(
 export function getParentTileKey(
   z: number,
   x: number,
-  y: number
+  y: number,
+  fallbackLayer: number
 ): string | null {
-  if (z <= 3) return null;
+  if (z <= fallbackLayer) return null;
   const parentZ = z - 1;
   const parentX = Math.floor(x / 2);
   const parentY = Math.floor(y / 2);

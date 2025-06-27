@@ -11,14 +11,14 @@ import { PerspectiveCamera } from "three";
  *
  * Dynamically tightens visibility cone at high zoom levels (Z13 ≈ 0.9).
  */
-export function getMinDotThreshold(z: number, cameraFovDeg: number): number {
+export function getMinDotThreshold(z: number, fallbackLayer: number): number {
   const clamp = (v: number, min: number, max: number) =>
     Math.min(Math.max(v, min), max);
 
-  const zFactor = clamp((z - 3) / 10, 0, 1); // Normalized [0–1] scale for Z3 to Z13
-  const minDot = 0.25; // Visible from side at low zoom
-  const maxDot = 0.9; // Strict forward cone at high zoom
-
+  // Now normalized from fallbackLayer to 13
+  const zFactor = clamp((z - fallbackLayer) / (13 - fallbackLayer), 0, 1);
+  const minDot = 0.25;
+  const maxDot = 0.9;
   return clamp(minDot + (maxDot - minDot) * Math.pow(zFactor, 1.6), 0, 0.94);
 }
 
@@ -75,34 +75,37 @@ export function getTileInflation(z: number, dist: number): number {
   return 1.0;
 }
 
+const ZOOM_RANGES = [
+  { min: 1.8, max: Infinity, zoom: 3 },
+  { min: 1.5, max: 1.8, zoom: 4 },
+  { min: 1.35, max: 1.5, zoom: 5 },
+  { min: 1.2, max: 1.35, zoom: 6 },
+  { min: 1.1, max: 1.2, zoom: 7 },
+  { min: 1.04, max: 1.1, zoom: 8 },
+  { min: 1.02, max: 1.04, zoom: 9 },
+  { min: 1.01, max: 1.02, zoom: 10 },
+  { min: 1.004, max: 1.01, zoom: 11 },
+  { min: 1.0015, max: 1.004, zoom: 12 },
+  { min: 1.00028, max: 1.0015, zoom: 13 },
+];
+
 /**
  * Estimates the appropriate zoom level for the current camera position.
  * Uses tight hysteresis windows at high zoom to prevent flicker.
  */
 export function estimateZoomLevel(camera: PerspectiveCamera): number {
   const dist = camera.position.length();
-
-  const zoomRanges = [
-    { min: 1.8, max: Infinity, zoom: 3 }, // far away
-    { min: 1.5, max: 1.8, zoom: 4 },
-    { min: 1.35, max: 1.5, zoom: 5 },
-    { min: 1.2, max: 1.35, zoom: 6 },
-    { min: 1.1, max: 1.2, zoom: 7 },
-    { min: 1.04, max: 1.1, zoom: 8 },
-    { min: 1.02, max: 1.04, zoom: 9 },
-    { min: 1.01, max: 1.02, zoom: 10 },
-    { min: 1.004, max: 1.01, zoom: 11 },
-    { min: 1.0015, max: 1.004, zoom: 12 },
-    { min: 1.00028, max: 1.0015, zoom: 13 },
-  ];
-
-  for (const range of zoomRanges) {
+  for (const range of ZOOM_RANGES) {
     if (dist >= range.min && dist < range.max) {
       return range.zoom;
     }
   }
-
   return 4; // Default fallback
+}
+
+export function getMinDistForZoom(z: number): number {
+  const found = ZOOM_RANGES.find((r) => r.zoom === z);
+  return found ? found.min : 0;
 }
 
 /**
@@ -153,17 +156,9 @@ export function getTileSearchRadius(z: number): number {
  * Returns a hard cap for screen-space visibility of tiles at each zoom level.
  * Used to discard stale or far-off high-Z tiles for performance.
  */
-export function getScreenDistanceCap(z: number): number {
-  if (z === 3) return 3.5;
-  if (z === 4) return 2.4;
-  if (z === 5) return 2.55;
-  if (z === 6) return 3.1;
-  if (z === 7) return 3.6;
-  if (z === 8) return 4.5;
-  if (z === 9) return 4.1;
-  if (z === 10) return 3.95;
-  if (z === 11) return 2.2;
-  if (z === 12) return 2.04;
-  if (z === 13) return 2.02;
+export function getScreenDistanceCap(z: number, fallbackLayer = 3): number {
+  const caps = [3.5, 2.4, 2.55, 3.1, 3.6, 4.5, 4.1, 3.95, 2.2, 2.04, 2.02];
+  const idx = z - fallbackLayer;
+  if (idx >= 0 && idx < caps.length) return caps[idx];
   return 1.0;
 }

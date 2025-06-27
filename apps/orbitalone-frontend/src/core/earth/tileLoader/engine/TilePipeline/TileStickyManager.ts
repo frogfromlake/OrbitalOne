@@ -13,16 +13,20 @@ type StickyCallbacks = {
 export class TileStickyManager {
   private parentToChildren = new Map<string, Set<string>>();
   private childToParent = new Map<string, string>();
+  private fallbackLayer: number;
 
   constructor(
     private cache: Map<string, Mesh>,
     private visibleTiles: Set<string>,
-    private opts: StickyCallbacks = {}
-  ) {}
+    private opts: StickyCallbacks = {},
+    fallbackLayer: number
+  ) {
+    this.fallbackLayer = fallbackLayer;
+  }
 
   /** Called whenever a child tile finishes loading/fading in. */
   onTileLoaded(childKey: string, z: number, x: number, y: number) {
-    const parentKey = getParentTileKey(z, x, y);
+    const parentKey = getParentTileKey(z, x, y, this.fallbackLayer);
     if (!parentKey) return;
 
     // Register relationship

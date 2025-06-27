@@ -53,7 +53,8 @@ export class TileVisualPipeline implements TileVisualPipelineLayer {
     config: TileEngineConfig,
     visibleTiles: Set<string>,
     taskQueue: TaskQueue,
-    z: number
+    z: number,
+    fallbackLayer: number
   ) {
     this.config = config;
     this.z = z;
@@ -66,6 +67,7 @@ export class TileVisualPipeline implements TileVisualPipelineLayer {
       createTileMesh,
       urlTemplate,
       radius,
+      fallbackLayer,
       taskQueue
     );
     this.state.visibleTiles = visibleTiles; // Share global visible set
@@ -201,6 +203,7 @@ export class TileVisualPipeline implements TileVisualPipelineLayer {
           urlTemplate: this.state.urlTemplate,
           radius: this.state.radius,
           renderer: this.state.renderer,
+          fallbackLayer: this.state.fallbackLayer,
         });
         mesh.visible = true;
         this.state.tileGroup.add(mesh);

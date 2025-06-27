@@ -53,7 +53,7 @@ export class TileRemover {
     const next = new Map<string, number>();
 
     for (const [key, framesLeft] of this.pendingRemoval.entries()) {
-      if (isFallbackTile(key)) {
+      if (isFallbackTile(key, this.state.fallbackLayer)) {
         // Use the robust coverage check!
         if (
           !isTileCoveredByOpaqueChildren(
@@ -133,8 +133,8 @@ function isTileCoveredByOpaqueChildren(
   });
 }
 
-function isFallbackTile(key: string): boolean {
+function isFallbackTile(key: string, fallbackLayer: number): boolean {
   const [zStr] = key.split("/");
   const z = Number(zStr);
-  return z <= 3; // Your fallback LOD
+  return z <= fallbackLayer;
 }

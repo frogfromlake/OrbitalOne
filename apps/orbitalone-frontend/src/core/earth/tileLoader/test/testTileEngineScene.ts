@@ -37,8 +37,9 @@ const tileUrlTemplate = useKTX2
 
 const createTileMeshFn: CreateTileMeshFn = useKTX2
   ? createTileMeshKTX2
-  : createRasterTileMesh;
+  : (options) => createRasterTileMesh(options);
 
+const fallbackLayer = 4;
 const debugTileEngineConfig: TileEngineConfig = {
   get enableFrustumCulling() {
     return window.enableFrustumCulling;
@@ -137,7 +138,7 @@ const camera = setupCamera();
 const renderer = setupRenderer();
 const controls = setupControls(camera, renderer);
 
-const fallbackLayer = undefined as any;
+// const fallbackLayer = undefined as any;
 // Dynamic GlobeTileEngine (Z4–Z13)
 const tileEngine = new GlobeTileEngine({
   camera,
@@ -145,7 +146,7 @@ const tileEngine = new GlobeTileEngine({
   scene,
   urlTemplate: tileUrlTemplate,
   createTileMesh: createTileMeshFn,
-  minZoom: 3, // Z3 is now handled by the new pipeline!
+  minZoom: fallbackLayer, // Z3 is now handled by the new pipeline!
   maxZoom: 13,
   // fallbackTileManager: undefined as any, // Remove as soon as refactor complete
   config: debugTileEngineConfig,
@@ -153,7 +154,6 @@ const tileEngine = new GlobeTileEngine({
 
 // Debug access
 Object.assign(window, {
-  fallbackTileManager: fallbackLayer,
   dynamicTileManager: tileEngine,
 });
 
@@ -226,16 +226,15 @@ function animate(): void {
   tileEngine.attachToScene();
 
   // 1. Load Z3 fallback tiles BEFORE rendering/animation!
-  const z3Layer = tileEngine.getTileLayers().get(3);
-  if (z3Layer && typeof z3Layer.loadAllTiles === "function") {
-    // High concurrency for quick load: 24 or more (if supported)
-    await z3Layer.loadAllTiles(24); 
-    z3Layer.group.renderOrder = 0; // Always below dynamic layers
+  const fallback = tileEngine.getTileLayers().get(fallbackLayer);
+  if (fallback && typeof fallback.loadAllTiles === "function") {
+    await fallback.loadAllTiles(24);
+    fallback.group.renderOrder = 0; // Always bottom
   }
 
   // 2. Set renderOrder for all higher LODs
   for (const [z, layer] of tileEngine.getTileLayers()) {
-    if (z > 3) layer.group.renderOrder = 1;
+    if (z > fallbackLayer) layer.group.renderOrder = 1;
   }
 
   // 3. Now enable controls and animation
