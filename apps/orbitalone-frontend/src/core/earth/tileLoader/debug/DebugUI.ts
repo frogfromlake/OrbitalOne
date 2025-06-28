@@ -35,7 +35,6 @@ export function createDebugUI({
     container.style.fontSize = "12px";
     container.style.borderRadius = "8px";
     container.style.zIndex = "10000";
-    // container.style.border = "2px solid #0ff"; // uncomment to debug UI visibility
     document.body.appendChild(container);
   }
   container.innerHTML = "";
@@ -183,6 +182,98 @@ export function createDebugUI({
 
     requestAnimationFrame(updateStatsOverlay);
   }
+
+  // --- Tile Preview Section ---
+  const tilePreviewSection = document.createElement("div");
+  tilePreviewSection.style.marginTop = "14px";
+  tilePreviewSection.style.padding = "8px";
+  tilePreviewSection.style.background = "rgba(24, 40, 60, 0.95)";
+  tilePreviewSection.style.borderRadius = "6px";
+  tilePreviewSection.style.fontFamily = "sans-serif";
+  tilePreviewSection.style.fontSize = "12px";
+
+  const header = document.createElement("div");
+  header.textContent = "Tile Preview (Z/X/Y)";
+  header.style.fontWeight = "bold";
+  header.style.marginBottom = "5px";
+  tilePreviewSection.appendChild(header);
+
+  // --- Input fields ---
+  const zInput = document.createElement("input");
+  zInput.type = "number";
+  zInput.placeholder = "Z";
+  zInput.style.width = "34px";
+  zInput.style.marginRight = "4px";
+
+  const xInput = document.createElement("input");
+  xInput.type = "number";
+  xInput.placeholder = "X";
+  xInput.style.width = "54px";
+  xInput.style.marginRight = "4px";
+
+  const yInput = document.createElement("input");
+  yInput.type = "number";
+  yInput.placeholder = "Y";
+  yInput.style.width = "54px";
+  yInput.style.marginRight = "4px";
+
+  const previewBtn = document.createElement("button");
+  previewBtn.textContent = "Preview";
+  previewBtn.style.marginRight = "8px";
+  previewBtn.style.fontSize = "11px";
+  previewBtn.style.padding = "2px 8px";
+  previewBtn.style.borderRadius = "4px";
+  previewBtn.style.border = "1px solid #888";
+  previewBtn.style.background = "#192438";
+  previewBtn.style.color = "#fff";
+  previewBtn.style.cursor = "pointer";
+
+  tilePreviewSection.appendChild(zInput);
+  tilePreviewSection.appendChild(xInput);
+  tilePreviewSection.appendChild(yInput);
+  tilePreviewSection.appendChild(previewBtn);
+
+  const resultDiv = document.createElement("div");
+  resultDiv.style.marginTop = "10px";
+  resultDiv.style.display = "flex";
+  resultDiv.style.alignItems = "center";
+  resultDiv.style.gap = "10px";
+  tilePreviewSection.appendChild(resultDiv);
+
+  container.appendChild(tilePreviewSection);
+
+  // --- Logic for preview ---
+  previewBtn.onclick = async () => {
+    const z = parseInt(zInput.value, 10);
+    const x = parseInt(xInput.value, 10);
+    const y = parseInt(yInput.value, 10);
+    resultDiv.innerHTML = ""; // Clear old
+
+    if (Number.isNaN(z) || Number.isNaN(x) || Number.isNaN(y)) {
+      resultDiv.textContent = "Please enter valid Z/X/Y.";
+      return;
+    }
+
+    // Show image only (no verdict)
+    const url = ((window as any).tileUrlTemplate || "")
+      .replace("{z}", String(z))
+      .replace("{x}", String(x))
+      .replace("{y}", String(y));
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `Sentinel-2 ${z}/${x}/${y}`;
+    img.style.width = "128px";
+    img.style.height = "128px";
+    img.style.objectFit = "contain";
+    img.style.background = "#222";
+    img.style.border = "1px solid #444";
+    img.onerror = () => {
+      img.src = "";
+      img.alt = "Tile not found";
+      resultDiv.textContent = "Tile not found";
+    };
+    resultDiv.appendChild(img);
+  };
 
   updateStatsOverlay();
 }

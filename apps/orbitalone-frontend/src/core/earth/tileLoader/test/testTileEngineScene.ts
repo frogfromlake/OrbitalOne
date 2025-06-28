@@ -64,6 +64,8 @@ const debugTileEngineConfig: TileEngineConfig = {
   },
 };
 
+(window as any).tileUrlTemplate = tileUrlTemplate;
+
 // -------------------------------------------------------------
 // Scene Setup
 // -------------------------------------------------------------
@@ -146,7 +148,7 @@ const tileEngine = new GlobeTileEngine({
   urlTemplate: tileUrlTemplate,
   createTileMesh: createTileMeshFn,
   minZoom: fallbackLayer, // Z3 is now handled by the new pipeline!
-  maxZoom: 13,
+  maxZoom: 14,
   // fallbackTileManager: undefined as any, // Remove as soon as refactor complete
   config: debugTileEngineConfig,
 });
@@ -155,38 +157,6 @@ const tileEngine = new GlobeTileEngine({
 Object.assign(window, {
   dynamicTileManager: tileEngine,
 });
-
-// tileEngine.attachToScene();
-// // After attaching to scene, load all Z3 tiles
-// const z3Layer = tileEngine.getTileLayers().get(3);
-// if (z3Layer && typeof z3Layer.loadAllTiles === "function") {
-//   z3Layer.loadAllTiles();
-//   z3Layer.group.renderOrder = 0; // Always below dynamic layers
-// }
-
-// // All higher LODs should be renderOrder 1
-// for (const [z, layer] of tileEngine.getTileLayers()) {
-//   if (z > 3) layer.group.renderOrder = 1;
-// }
-
-// -------------------------------------------------------------
-// OrbitControls & Initial Tile Load
-// -------------------------------------------------------------
-// let firstUpdateDone = false;
-// controls.addEventListener("change", () => {
-//   if (!firstUpdateDone) {
-//     firstUpdateDone = true;
-
-//     // No fallbackLayer to load. Immediately set renderOrder and start tiles.
-//     for (const layer of tileEngine.getTileLayers().values()) {
-//       layer.group.renderOrder = 1;
-//     }
-
-//     tileEngine.loadInitialTiles();
-//   } else {
-//     tileEngine.update();
-//   }
-// });
 
 // -------------------------------------------------------------
 // Resize & Animation Loop
@@ -252,7 +222,3 @@ function animate(): void {
   controls.dispatchEvent({ type: "change" });
   animate();
 })();
-
-// controls.update();
-// controls.dispatchEvent({ type: "change" });
-// animate();
