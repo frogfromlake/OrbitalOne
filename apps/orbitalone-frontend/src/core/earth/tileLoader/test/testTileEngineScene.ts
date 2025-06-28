@@ -137,7 +137,6 @@ const scene = setupScene();
 const camera = setupCamera();
 const renderer = setupRenderer();
 const controls = setupControls(camera, renderer);
-
 // const fallbackLayer = undefined as any;
 // Dynamic GlobeTileEngine (Z4–Z13)
 const tileEngine = new GlobeTileEngine({
