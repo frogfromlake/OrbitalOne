@@ -340,9 +340,7 @@ export async function startApp(updateSubtitle: (text: string) => void) {
   const runPostFadeTasks = () => {
     // === News panel
     setTimeout(async () => {
-      const { initNewsPanel } = await import(
-        "./features/panels/news/handleNewsPanel"
-      );
+      const { initNewsPanel } = await import("./features/news/handleNewsPanel");
       initNewsPanel(selection.countryIds, selection.countryFlags);
     }, 300);
 

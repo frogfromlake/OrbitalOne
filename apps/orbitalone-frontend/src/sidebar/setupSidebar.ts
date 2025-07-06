@@ -12,7 +12,7 @@ import {
   toggleOceanInteractivity,
 } from "@/sidebar/features/toggleSelections";
 import { setupUserLocation } from "@/sidebar/features/showUserLocation";
-import { setupLocationSearch } from "@/features/panels/locationSearch/locationSearch";
+import { setupLocationSearch } from "@/features/locationSearch/locationSearch";
 import { hideAll3DLabelsExcept } from "@/core/earth/interactivity/countryLabels3D";
 import { hideAll3DOceanLabels } from "@/core/earth/interactivity/oceanLabel3D";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";

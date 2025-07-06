@@ -10,7 +10,7 @@ import {
 } from "three";
 import { CONFIG } from "@/configs/config";
 import { countryMeta } from "@/core/data/countryMeta";
-import { showNewsPanel } from "@/features/panels/news/handleNewsPanel";
+import { showNewsPanel } from "@/features/news/handleNewsPanel";
 import { hideAll3DLabelsExcept, update3DLabel } from "./countryLabels3D";
 
 // Internal state

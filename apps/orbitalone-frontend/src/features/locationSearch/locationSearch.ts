@@ -23,9 +23,7 @@ import { latLonToSphericalCoordsGeographic } from "@/core/earth/geo/coordinates"
 import Fuse from "fuse.js";
 
 async function showNewsLazy(isoCode: string) {
-  const { showNewsPanel } = await import(
-    "@/features/panels/news/handleNewsPanel"
-  );
+  const { showNewsPanel } = await import("@/features/news/handleNewsPanel");
   await showNewsPanel(isoCode);
 }
 
@@ -85,7 +83,6 @@ export function setupLocationSearch(
   const suggestionsList = document.getElementById(
     "suggestions"
   ) as HTMLUListElement;
-
 
   inputLocation?.addEventListener("input", () => {
     const query = inputLocation.value.trim();

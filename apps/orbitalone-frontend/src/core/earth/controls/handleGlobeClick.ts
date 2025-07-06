@@ -5,25 +5,27 @@
  */
 
 import { Intersection } from "three";
-import { appState } from '@/state/appState';
-import { getCountryIdAtUV } from '@/core/earth/interactivity/countryHover';
-import { getOceanIdAtUV } from '@/core/earth/interactivity/oceanHover';
-import { oceanIdToIndex } from '@/utils/oceanIdToIndex';
-import { countryMeta } from '@/core/data/countryMeta';
-import { CONFIG } from '@/configs/config';
+import { appState } from "@/state/appState";
+import { getCountryIdAtUV } from "@/core/earth/interactivity/countryHover";
+import { getOceanIdAtUV } from "@/core/earth/interactivity/oceanHover";
+import { oceanIdToIndex } from "@/utils/oceanIdToIndex";
+import { countryMeta } from "@/core/data/countryMeta";
+import { CONFIG } from "@/configs/config";
 
 /**
  * Dynamically loads and shows news for a country by ISO code.
  */
 async function showNewsForCountry(isoCode: string) {
-  (await import("../../../features/panels/news/handleNewsPanel")).showNewsPanel(isoCode);
+  (await import("../../../features/news/handleNewsPanel")).showNewsPanel(
+    isoCode
+  );
 }
 
 /**
  * Dynamically loads and hides the news panel.
  */
 async function hideNews() {
-  (await import("../../../features/panels/news/handleNewsPanel")).hideNewsPanel();
+  (await import("../../../features/news/handleNewsPanel")).hideNewsPanel();
 }
 
 /**

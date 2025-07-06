@@ -1,58 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>TileLoader Test</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      #attribution {
-        position: fixed;
-        bottom: 8px;
-        right: 12px;
-        font-size: 12px;
-        color: #ccc;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 6px 10px;
-        border-radius: 4px;
-        font-family: sans-serif;
-        pointer-events: none;
-        user-select: none;
-        line-height: 1.4;
-      }
-      #attribution a {
-        color: #ccc;
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body style="background-color: black;">
-    <script type="module" src="/src/core/earth/tileLoader/test/testTileEngineScene.ts"></script>
+<head>
+  <link
+  rel="preload"
+  href="/fonts/inter/InterVariable.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin="anonymous"
+/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" />
+  <title>OrbitalOne</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
 
-    <div id="attribution">
-      Sentinel-2 cloudless - <a href="https://s2maps.eu" target="_blank">https://s2maps.eu</a> by EOX IT Services GmbH<br />
-      (Contains modified Copernicus Sentinel data 2024)
+  <!-- Loading screen -->
+  <div id="loading-screen">
+    <div class="loader-container">
+      <div class="orbital-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-pulse"></div>
+      </div>
+      <h1 class="title">OrbitalOne</h1>
+      <h3 class="subtitle"></h3> <!-- Start empty and invisible -->
+    </div>
+  </div>
+
+  <div id="app-container" class="hidden">
+
+    <!-- Country search input: now outside the sidebar -->
+    <div class="search-wrapper">
+      <input
+        id="country-search"
+        class="country-search"
+        type="search"
+        placeholder="Search country or ocean..."
+        autocomplete="off"
+      />
+      <ul id="suggestions" class="suggestions hidden"></ul>
+    </div>    
+  
+    <!-- Sidebar toggle button (hamburger icon in a circle) -->
+    <div id="sidebar-toggle" class="sidebar-toggle">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
     </div>
 
-    <!-- The debug UI will be injected here -->
-    <script type="module">
-      import { createDebugUI } from "/src/core/earth/tileLoader/debug/DebugUI";
+    <div id="sim-clock" class="sim-clock">Loading UTC time...</div>
+    
+    <!-- Sidebar menu -->
+    <div id="sidebar" class="sidebar">
 
-      // Register your debug features (easy to extend)
-      createDebugUI({
-        features: [
-          // Core engine toggles (default section)
-          { key: "enableFrustumCulling", label: "Frustum Culling", type: "checkbox", default: true },
-          { key: "enableDotProductFiltering", label: "Dot Filter", type: "checkbox", default: true },
-          { key: "enableScreenSpacePrioritization", label: "Screen Priority", type: "checkbox", default: true },
-          { key: "enableCaching", label: "Caching", type: "checkbox", default: true },
-          { key: "enableTileFade", label: "Tile Fade", type: "checkbox", default: true },
-          { key: "enableStickyTiles", label: "Sticky LOD", type: "checkbox", default: false },
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">Quick Actions</h3>
+        <button id="show-location" class="globe-btn">Show My Location</button>
+        <button id="clear-selection" class="globe-btn">Clear All Selections</button>
+      </div>
 
-          // Visualization/debug overlays, in special section
-          { key: "debugSpiralBounds", label: "Spiral Boxes (Z9+)", type: "checkbox", default: false, section: "Debug Views" },
-        ],
-        title: "Tile Debug UI"
-      });
-    </script>
-  </body>
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">Interactivity</h3>
+        <button id="toggle-country" class="globe-btn">Disable Country Interactivity</button>
+        <button id="toggle-ocean" class="globe-btn">Disable Ocean Interactivity</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">Visual Effects</h3>
+        <button id="toggle-atmosphere" class="globe-btn">Disable Atmosphere</button>
+        <button id="toggle-star-mode" class="globe-btn">Background: Realistic</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">Night View</h3>
+        <button id="toggle-flashlight" class="globe-btn">Disable Flashlight</button>
+      </div>
+
+    </div>
+
+    <!-- News Panel -->
+    <div id="news-panel" class="news-panel">
+      <div class="news-panel-header">
+        <strong id="news-title">Top News</strong>
+        <div class="news-controls">
+          <button class="translate-btn" id="translate-toggle">🌐 Translate to English</button>
+          <div class="right-buttons">
+            <button class="reset-btn" id="news-reset">↺ Reset</button>
+            <button class="close-btn" id="news-close">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="news-content" class="news-content"></div>
+    </div>
+
+    <canvas id="globe"></canvas>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
