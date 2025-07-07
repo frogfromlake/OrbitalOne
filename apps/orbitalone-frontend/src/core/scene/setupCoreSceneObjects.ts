@@ -41,7 +41,7 @@ export function setupCoreSceneObjects(
 
   const globe = new Mesh(globeGeometry, globeMaterial);
   globe.renderOrder = 2;
-
+  globe.visible = true;
   const raycastGeometry = new SphereGeometry(CONFIG.globe.radius, 32, 32);
   const globeRaycastMesh = new Mesh(
     raycastGeometry,

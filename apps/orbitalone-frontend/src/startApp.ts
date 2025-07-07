@@ -38,6 +38,9 @@ import { loadCoreTextures } from "@/core/earth/init/initializeTextures";
 import { enhanceSceneObjects } from "./core/scene/enhanceSceneObjects";
 import { setupCoreSceneObjects } from "./core/scene/setupCoreSceneObjects";
 import { loadBorderMeshesDeferred } from "./core/earth/borders/loadBorderMeshesDeferred";
+import { createRasterTileMesh } from "./core/globeTileEngine/tileMesh/RasterTileMeshBuilder";
+import { GlobeTileEngine } from "./core/globeTileEngine/tilePipeline/GlobeTileEngine";
+import { CONFIG } from "./configs/config";
 
 if (typeof window.requestIdleCallback !== "function") {
   window.requestIdleCallback = function (
@@ -113,22 +116,14 @@ export async function startApp(updateSubtitle: (text: string) => void) {
   });
 
   // === Core Three.js Setup ===
+  // Core Three.js setup
   const camera = initializeCamera();
   const renderer = initializeRenderer(camera);
   const { scene, controls } = await initializeScene(camera, renderer);
 
-  // === Load UI element reference
-  const locationSearchInput = document.getElementById(
-    "country-search"
-  ) as HTMLInputElement | null;
-  if (!locationSearchInput) {
-    console.warn("Missing #country-search input — skipping related setup.");
-  }
-
   // === Load Core (Lightweight) Textures ===
   const { countryIdMapTexture, oceanIdMapTexture } = await loadCoreTextures();
   performance.mark("startApp:basic-init-done");
-  let animate = () => {};
 
   // === Initialize Uniforms with temporary placeholder maps ===
   const {
@@ -155,7 +150,7 @@ export async function startApp(updateSubtitle: (text: string) => void) {
     oceanData: selectedOceanData,
   });
 
-  // === Populate Scene with Core Meshes (temporary placeholder sky texture) ===
+  // === Create globe and tiltGroup as part of the scene ===
   const { globe, globeRaycastMesh, tiltGroup } = setupCoreSceneObjects(
     scene,
     uniforms
@@ -165,6 +160,16 @@ export async function startApp(updateSubtitle: (text: string) => void) {
   const { atmosphere, cloudSphere, starSphere, auroraMesh, subsolarMarker } =
     enhanceSceneObjects(scene, uniforms, tiltGroup, new Texture());
   performance.mark("startApp:core-scene-ready");
+
+  // === Load UI element reference
+  const locationSearchInput = document.getElementById(
+    "country-search"
+  ) as HTMLInputElement | null;
+  if (!locationSearchInput) {
+    console.warn("Missing #country-search input — skipping related setup.");
+  }
+
+  let animate = () => {};
 
   const { setupSettingsPanel } = await import("./sidebar/setupSidebar");
   const { getBackgroundMode } = await setupSettingsPanel(
@@ -182,6 +187,42 @@ export async function startApp(updateSubtitle: (text: string) => void) {
     selectedFadeIn,
     selectedOceanFadeIn
   );
+
+  // --- Tile Engine overlays attach here! ---
+  const fallbackLayer = 4;
+  const tileEngine = new GlobeTileEngine({
+    camera,
+    renderer,
+    scene: tiltGroup, // ← IMPORTANT: attach tiles to tiltGroup, not root scene!
+    urlTemplate: import.meta.env.VITE_TILE_PROXY_URL
+      ? `${import.meta.env.VITE_TILE_PROXY_URL}/tile/{z}/{x}/{y}`
+      : "http://localhost:8080/tile/{z}/{x}/{y}",
+    createTileMesh: createRasterTileMesh,
+    minZoom: fallbackLayer,
+    maxZoom: 13,
+    config: {
+      enableFrustumCulling: true,
+      enableDotProductFiltering: true,
+      enableScreenSpacePrioritization: true,
+      enableCaching: true,
+      debugSpiralBounds: false,
+      enableTileFade: true,
+    },
+    getRadiusForZoom: () => CONFIG.globe.radius, // <<< ADD THIS LINE!
+  });
+  tileEngine.attachToScene();
+
+  tileEngine.forEachTileGroup((group) => {
+    group.renderOrder = 3;
+  });
+
+  // --- Listen for camera/controls changes to update tiles ---
+  (controls as any).addEventListener("change", () => {
+    tileEngine.update();
+  });
+
+  // Optionally, trigger initial tile load if needed
+  tileEngine.loadInitialTiles?.();
 
   const updateKeyboardRef = { fn: (delta: number) => {} };
 

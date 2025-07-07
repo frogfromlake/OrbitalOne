@@ -21,11 +21,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/tile-proxy-rust /usr/local/bin
-COPY scripts/prefill_tiles.sh /app/scripts/prefill_tiles.sh
+RUN ls -l /app/scripts || true && ls -l /app || true
+COPY scripts/prefill_nasa_tiles.sh /app/scripts/prefill_nasa_tiles.sh
+RUN ls -l /app/scripts
 
-RUN chmod +x /app/scripts/prefill_tiles.sh
+RUN chmod +x /app/scripts/prefill_nasa_tiles.sh
 RUN mkdir -p /data/logs
 
 # Optional: run prefill script at startup if desired (commented out for safety)
-# ENTRYPOINT ["/app/scripts/prefill_tiles.sh"]
-ENTRYPOINT ["/usr/local/bin/tile-proxy-rust"]
+ENTRYPOINT ["/app/scripts/prefill_nasa_tiles.sh"]
+# ENTRYPOINT ["/usr/local/bin/tile-proxy-rust"]

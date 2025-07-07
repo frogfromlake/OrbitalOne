@@ -12,12 +12,15 @@
     "generate:orgbmap": "tsx src/core/data/dev/generateOceanIdMapPacked.ts",
     "generate:oceancentroids": "tsx src/core/data/dev/generateOceanCenters.ts",
     "generate:countryData": "tsx src/core/data/dev/generateCountryMeta.ts",
+    "download:bunnytiles": "tsx src/core/data/dev/tilesets/download_nasa_tiles_from_bunny.ts",
     "update:aliasimports": "tsx src/core/data/dev/aliasImports.ts"
   },
   "devDependencies": {
+    "@types/async-retry": "^1.4.9",
+    "@types/cli-progress": "^3.11.6",
     "@types/d3-geo": "^3.1.0",
     "@types/geojson": "^7946.0.16",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.16.0",
     "@types/three": "^0.175.0",
     "depcheck": "^1.4.7",
     "rollup-plugin-visualizer": "^5.14.0",
@@ -31,11 +34,15 @@
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
+    "async-retry": "^1.3.3",
+    "axios": "^1.10.0",
     "canvas": "^3.1.0",
+    "cli-progress": "^3.12.0",
     "d3-geo": "^3.1.1",
     "fuse.js": "^7.1.0",
     "gsap": "^3.12.7",
     "i18n-iso-countries": "^7.14.0",
+    "p-limit": "^6.2.0",
     "three": "^0.176.0",
     "three.meshline": "^1.4.0"
   }
