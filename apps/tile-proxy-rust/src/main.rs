@@ -133,7 +133,7 @@ async fn actual_proxy_logic(
         [mode @ ("day" | "night"), z, x, y_with_ext] => {
             let (y, ext) = match y_with_ext.rsplit_once('.') {
                 Some((y, ext)) => (y, Some(ext)),
-                None => (y_with_ext, None),
+                None => (*y_with_ext, None),
             };
             (Some(*mode), *z, *x, y, ext)
         }
@@ -141,7 +141,7 @@ async fn actual_proxy_logic(
         [z, x, y_with_ext] => {
             let (y, ext) = match y_with_ext.rsplit_once('.') {
                 Some((y, ext)) => (y, Some(ext)),
-                None => (y_with_ext, None),
+                None => (*y_with_ext, None),
             };
             (None, *z, *x, y, ext)
         }
@@ -197,7 +197,7 @@ async fn actual_proxy_logic(
         ext.map(|e| format!(".{}", e)).unwrap_or_default()
     );
 
-    // ==== (A) Serve NASA Bunny CDN Day/Night KTX2 tiles (z5-z7) from volume ====
+    // ==== (A) Serve NASA Day/Night KTX2 tiles (z5-z7) from volume ====
     if let Some(mode @ ("day" | "night")) = mode {
         if ext == Some("ktx2") && (5..=7).contains(&z) {
             if let Some(base_path) = get_tile_base_path() {
@@ -231,7 +231,7 @@ async fn actual_proxy_logic(
     if mode.is_none() && (ext.is_none() || ext == Some("jpg")) {
         if let Some(base_path) = get_tile_base_path() {
             if (0..=8).contains(&z) && Path::new(&base_path).exists() {
-                let tile_path = format!("{}/{}/{}/{}.jpg", base_path, z, x, y);
+                let tile_path = format!("{}/{}/{}/{}.jpg", base_path, z, y, x); // flipped x and y
                 match fs::read(&tile_path).await {
                     Ok(file_bytes) => {
                         let elapsed = start.elapsed().as_millis();
@@ -280,7 +280,7 @@ async fn actual_proxy_logic(
 
     // ==== (D) Fetch Sentinel-2 JPEG (z9+) from upstream ====
     if mode.is_none() && (ext.is_none() || ext == Some("jpg")) {
-        let upstream_path = format!("{}/{}/{}", z, y, x); // flip x <-> y
+        let upstream_path = format!("{}/{}/{}", z, y, x); // flip x and y for upstream because EOX CDN apparently uses this order
         let upstream_url = format!(
             "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/GoogleMapsCompatible/{}.jpg",
             upstream_path
