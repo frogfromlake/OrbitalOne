@@ -1,5 +1,7 @@
 # 🌍 OrbitalOne
 
+Currently under maintenance, soon reachable again!
+
 <p align="center">
   <img src="./frontend/assets/earth_closeup.png" alt="Twilight on earth with canada (top), the united states (center right) and parts of the north pacific ocean (left) in the view" width="49%"/>
   <img src="./frontend/assets/feature_preview.png" alt="The current state of the menu on the left, highlighted atlantic and germany in the center with the local and latest top news from germany in the news feed window on the right." width="49%"/>
